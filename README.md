@@ -1,2 +1,3 @@
-# Qnime_backend
-Backend for Qnime
+# Qnime-backend
+
+Backend for Qnime. In developing.

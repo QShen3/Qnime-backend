@@ -1,0 +1,28 @@
+{
+  "name": "qnime_backend",
+  "version": "1.0.0",
+  "description": "Backend for Qnime",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QShen3/Qnime_backend.git"
+  },
+  "author": "QShen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/QShen3/Qnime_backend/issues"
+  },
+  "homepage": "https://github.com/QShen3/Qnime_backend#readme",
+  "dependencies": {
+    "body-parser": "^1.18.2",
+    "cookie-parser": "^1.4.3",
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "mongoose": "^5.0.12",
+    "redis": "^2.8.0",
+    "urllib": "^2.27.0"
+  }
+}
