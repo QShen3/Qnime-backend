@@ -1,6 +1,9 @@
 const logger = require('../utility/logger');
 
 module.exports = async (err, req, res, next) => {
+    if(err.info){
+        logger.error(err.info);
+    }
     logger.error(err.stack);
     if(!err.statusCode) {
         err.statusCode = 500;
@@ -9,6 +12,9 @@ module.exports = async (err, req, res, next) => {
         code: err.statusCode
     }
     switch(err.statusCode){
+        case(400):
+            info.desc = 'Bad Request';
+            break;
         case(500): 
             info.desc = 'Internal Server Error';
             break;

@@ -9,6 +9,7 @@ const BangumiSchema = new Schema({
     summary: { type: String },
     air_date: { type: String },
     air_time: { type: String },
+    status: { type: Number, default: 0 }, // 0: not air, 1: air, 2: finished
     type: { type: String, enum: ['tv', 'ova', 'movie', 'web', 'special_tv', 'other'] },
     country: { type: String },
     quarter: { type: String, enum: ['', 'winter', 'spring', 'summer', 'autumn'] },
@@ -32,14 +33,14 @@ const BangumiSchema = new Schema({
         title: { type: String },
         name: { type: String },
         name_cn: { type: String },
-        status: { type: Number, default: 0 }, //0: not air, 1: air
+        status: { type: Number, default: 0 }, // 0: not air, 1: air
         id: { type: Schema.Types.ObjectId }
     }],
     sp: [{
         title: { type: String },
         name: { type: String },
         name_cn: { type: String },
-        status: { type: Number, default: 0 }, //0: not air, 1: air
+        status: { type: Number, default: 0 }, // 0: not air, 1: air
         id: { type: Schema.Types.ObjectId }
     }],
     broadcaster: [{
@@ -58,9 +59,9 @@ const BangumiSchema = new Schema({
         air_time: { type: String },
     }],
     other_website: [{
-        name: {type: String},
-        url: {type: String},
-        id: {type: String}
+        name: { type: String },
+        url: { type: String },
+        id: { type: String }
     }],
     create_time: { type: Date, default: Date.now },
     update_time: { type: Date, default: Date.now },
@@ -72,12 +73,12 @@ BangumiSchema.index({ name_cn: 1 });
 
 BangumiSchema.virtual('air_year').get(() => {
     let year = this.air_date.split('-')[0];
-    return year;
+    return parseInt(year);
 });
 
 BangumiSchema.virtual('air_month').get(() => {
     let month = this.air_date.split('-')[1];
-    return month;
+    return parseInt(month);
 });
 
 BangumiSchema.virtual('ep_count').get(() => {
@@ -88,24 +89,14 @@ BangumiSchema.virtual('ep_count').get(() => {
 BangumiSchema.virtual('air_weekday').get(() => {
     if (this.type === 'tv' && this.country === 'Japan') {
         let date = dtime(this.air_date);
-        return date.format('dd');
+        return date.format('d');
     }
     else {
         return '';
     }
 });
 
-// BangumiSchema.virtual('quarter').get(() => {
-//     if (this.type === 'tv' && this.country === 'Japan') {
-//         let month = parseInt(this.month);
-//         if(month )
-//     }
-//     else {
-//         return ''
-//     }
-// })
-
-BangumiSchema.pre('save', function (next) {
+BangumiSchema.pre('save', (next) => {
     let now = new Date();
     this.update_time = now;
     next();

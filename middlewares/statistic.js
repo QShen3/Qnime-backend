@@ -1,4 +1,4 @@
-const { Statis } = require('../models/index');
+const { Statis } = require('../models');
 const dtime = require('time-formater');
 
 const apiRecord = async (req, res, next) => {

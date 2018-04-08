@@ -1,6 +1,6 @@
 const { Router } = require('express');
 
-const bangumi = require('./controllers/bangumi');
+const bangumiController = require('./controllers/bangumi');
 
 const router = Router();
 
@@ -14,7 +14,7 @@ const router = Router();
 //     return;
 // })
 
-router.get('/bangumis/list', bangumi.list);
-router.get('/bangumi/:id', bangumi.detail);
+router.get('/bangumis/list', bangumiController.list);
+router.get('/bangumi/:id', bangumiController.detail);
 
 module.exports = router;
