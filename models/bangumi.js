@@ -66,27 +66,39 @@ const BangumiSchema = new Schema({
     create_time: { type: Date, default: Date.now },
     update_time: { type: Date, default: Date.now },
     views: { type: Number, default: 0 }
-}, { toJSON: { virtuals: true } });
+}, { toJSON: { virtuals: true }, toObject: {virtuals: true} });
 
 BangumiSchema.index({ name: 1 });
 BangumiSchema.index({ name_cn: 1 });
 
-BangumiSchema.virtual('air_year').get(() => {
+BangumiSchema.virtual('air_year').get(function () {
+    if(!this.air_date){
+        return undefined;
+    }
     let year = this.air_date.split('-')[0];
     return parseInt(year);
 });
 
-BangumiSchema.virtual('air_month').get(() => {
+BangumiSchema.virtual('air_month').get(function () {
+    if(!this.air_date){
+        return undefined;
+    }
     let month = this.air_date.split('-')[1];
     return parseInt(month);
 });
 
-BangumiSchema.virtual('ep_count').get(() => {
-    let count = this.ep.length();
-    return count;
-});
+// BangumiSchema.virtual('ep_count').get(function () {
+//     if(!this.ep){
+//         return 0;
+//     }
+//     let count = this.ep.length;
+//     return count;
+// });
 
-BangumiSchema.virtual('air_weekday').get(() => {
+BangumiSchema.virtual('air_weekday').get(function() {
+    if(!this.air_date){
+        return undefined;
+    }
     if (this.type === 'tv' && this.country === 'Japan') {
         let date = dtime(this.air_date);
         return date.format('d');

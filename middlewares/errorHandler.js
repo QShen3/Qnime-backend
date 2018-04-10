@@ -1,5 +1,10 @@
 const logger = require('../utility/logger');
 
+let errDesc = new Map([
+    [400, 'Bad Request'],
+    [500, 'Internal Server Error']
+]);
+
 module.exports = async (err, req, res, next) => {
     if(err.info){
         logger.error(err.info);
@@ -11,14 +16,8 @@ module.exports = async (err, req, res, next) => {
     let info = {
         code: err.statusCode
     }
-    switch(err.statusCode){
-        case(400):
-            info.desc = 'Bad Request';
-            break;
-        case(500): 
-            info.desc = 'Internal Server Error';
-            break;
-    }
+    info.desc = errDesc.get(err.statusCode) || '';
+    
     res.status(500).json({
         info
     });

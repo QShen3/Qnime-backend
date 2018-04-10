@@ -12,10 +12,18 @@ const StaffSchema = new Schema({
         grid: { type: String },
     },
     info: { type: Schema.Types.Mixed },
-    jobs: [{type: String}]
+    jobs: [{type: String}],
+    update_time: { type: Date, default: Date.now },
+    views: { type: Number, default: 0 }
 });
 
 StaffSchema.index({ name: 1 });
 StaffSchema.index({ name_cn: 1 });
+
+StaffSchema.pre('save', (next) => {
+    let now = new Date();
+    this.update_time = now;
+    next();
+});
 
 mongoose.model('Staff', StaffSchema);
