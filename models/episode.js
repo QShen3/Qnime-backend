@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const EpisodeSchema = new Schema({
     name: { type: String },
     name_cn: { type: String },
+    bgm_id: {type: Schema.Types.ObjectId},
     duration: { type: Number },
     air_date: { type: String },
     air_time: {type: String},
