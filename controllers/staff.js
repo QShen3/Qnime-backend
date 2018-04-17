@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
 const { Staff, Bangumi } = require('../models');
 const BaseController = require('./base');
@@ -14,7 +15,7 @@ class StaffController extends BaseController {
     async list(req, res, next) {
         let pager, query;
         try {
-            ({ query, pager } = this._makeListQuery(req.query, next));
+            ({ query, pager } = await this._makeListQuery(req.query, next));
         }
         catch (err) {
             err.info = 'Make staff list query error';
@@ -84,11 +85,11 @@ class StaffController extends BaseController {
     }, next) {
         let query = Staff.find();
 
-        if (validator.isIn(gender, ['男', '女'])) {
-            query = query.elemMatch('info', { gender: gender });
+        if (validator.isIn(gender || "", ['男', '女'])) {
+            query = query.find({'info.gender': gender});
         }
 
-        if (!validator.isEmpty(job)) {
+        if (!validator.isEmpty(job || "")) {
             query = query.all('jobs', [job]);
         }
 
@@ -105,7 +106,7 @@ class StaffController extends BaseController {
             lastpage: Math.ceil(parseInt(count) / parseInt(pagesize)),
         }
 
-        query = query.sort(sort).skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
+        query = query.find().sort(sort).skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
 
         return {
             query,
