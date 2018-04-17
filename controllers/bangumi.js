@@ -2,10 +2,12 @@ const dtime = require('time-formater');
 const validator = require('validator');
 
 const { Bangumi } = require('../models');
+const BaseController = require('./base');
 
-class BangumiController {
+class BangumiController extends BaseController{
 
     constructor() {
+        super();
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
     }
@@ -16,18 +18,15 @@ class BangumiController {
             ({ query, pager } = await this._makeListQuery(req.query, next));
         }
         catch (err) {
-            err.info = 'Make bangumi list query error';
+            if(!err.info){
+                err.info = 'Make bangumi list query error';
+            }           
             return next(err);
         }
 
         let bangumis;
         try {
-            bangumis = await query.select('name name_cn air_date status type country quarter images views ep').exec();
-            for (let i in bangumis) {
-                bangumis[i] = bangumis[i].toObject();
-                bangumis[i].ep_count = bangumis[i].ep.length;
-                delete bangumis[i].ep;
-            }
+            bangumis = await query.select('name name_cn air_date status type country quarter images views ep_count').exec();
         }
         catch (err) {
             err.info = 'Get bangumi documents error';
@@ -35,10 +34,7 @@ class BangumiController {
         }
 
         let result = {
-            info: {
-                code: 200,
-                desc: 'OK',
-            },
+            info: this.info200,
             bangumis,
             pager,
         };
@@ -48,10 +44,12 @@ class BangumiController {
     async detail(req, res, next) {
         let query;
         try {
-            query = await this._makeDetailQuery(req.params, next);
+            query = this._makeDetailQuery(req.params, next);
         }
         catch (err) {
-            err.info = 'Make bangumi detail query error';
+            if(!err.info){
+                err.info = 'Make bangumi detail query error';
+            }
             return next(err);
         }
 
@@ -65,10 +63,7 @@ class BangumiController {
         }
 
         let result = {
-            info: {
-                code: 200,
-                desc: 'OK',
-            },
+            info: this.info200,
             bangumi
         }
         res.status(200).json(result);
@@ -117,11 +112,9 @@ class BangumiController {
             query = query.find({ air_weekday: weekday });
         }
 
-        if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views'])) {
-            let error = new Error();
-            error.info = 'Invalid params sort'
-            error.statusCode = 400;
-            return next(error);
+        if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
+            let error = this.error400('Invalid params sort');
+            throw(error);
         }
 
         let count = await query.count().exec();
@@ -132,7 +125,7 @@ class BangumiController {
             lastpage: Math.ceil(parseInt(count) / parseInt(pagesize)),
         }
 
-        query = query.find().skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
+        query = query.find().sort(sort).skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
 
         return {
             query,
@@ -142,9 +135,8 @@ class BangumiController {
 
     _makeDetailQuery({ id }, next) {
         if (!validator.isMongoId(id)) {
-            let error = new Error();
-            error.statusCode = 400;
-            return next(error);
+            let error = this.error400('Invalid params id');
+            throw(error);
         }
 
         let query = Bangumi.findById(id);

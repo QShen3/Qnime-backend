@@ -1,7 +1,11 @@
-const { Staff } = require('../models');
+const mongoose = require('mongoose');
 
-class StaffController {
+const { Staff, Bangumi } = require('../models');
+const BaseController = require('./base');
+
+class StaffController extends BaseController {
     constructor(){
+        super();
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
         this.bangumi = this.bangumi.bind(this);
@@ -27,10 +31,7 @@ class StaffController {
         }
 
         let result = {
-            info: {
-                code: 200,
-                desc: 'OK',
-            },
+            info: this.info200,
             staffs,
             pager,
         };
@@ -57,17 +58,21 @@ class StaffController {
         }
 
         let result = {
-            info: {
-                code: 200,
-                desc: 'OK'
-            },
+            info: this.info200,
             staff
         }
         res.status(200).json(result);
     }
 
     async bangumi(req, res, next) {
-
+        let query;
+        try{
+            query = await this._makeBangumiQuery(req.query, next);
+        }
+        catch(err){
+            err.info = 'Make staff bangumi query error';
+            return next(err);
+        }
     }
 
     async _makeListQuery({
@@ -87,6 +92,11 @@ class StaffController {
             query = query.all('jobs', [job]);
         }
 
+        if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
+            let error = this.error400('Invalid params sort');
+            return next(error);
+        }
+
         let count = await query.count().exec();
         let pager = {
             page,
@@ -95,7 +105,7 @@ class StaffController {
             lastpage: Math.ceil(parseInt(count) / parseInt(pagesize)),
         }
 
-        query = query.skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
+        query = query.sort(sort).skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
 
         return {
             query,
@@ -105,14 +115,47 @@ class StaffController {
 
     _makeDetailQuery({ id }, next) {
         if (!validator.isMongoId(id)) {
-            let error = new Error();
-            error.statusCode = 400;
+            let error = this.error400('Invalid params id');
             return next(error);
         }
 
         let query = Staff.findById(id);
 
         return query;
+    }
+
+    async _makeBangumiQuery({ 
+        sort = 'update_time',
+        page = 1,
+        pagesize = 30,
+        id,
+    }, next) {
+        if (!validator.isMongoId(id)) {
+            let error = this.error400('Invalid params id');
+            return next(error);
+        }
+
+        if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
+            let error = this.error400('Invalid params sort');
+            return next(error);
+        }
+
+        let query = Bangumi.elemMatch('staff', {id: mongoose.Schema.Types.ObjectId(id)});
+
+        let count = await query.count().exec();
+        let pager = {
+            page,
+            pagesize,
+            count,
+            lastpage: Math.ceil(parseInt(count) / parseInt(pagesize)),
+        }
+
+        query = query.find().sort(sort).skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
+
+        return {
+            query,
+            pager,
+        };
     }
 }
 
