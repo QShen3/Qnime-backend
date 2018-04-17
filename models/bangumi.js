@@ -97,4 +97,14 @@ BangumiSchema.pre('save', function (next) {
     next();
 });
 
+BangumiSchema.method('increaseView', function() {
+    if(!this.views){
+        this.views = 1;
+    }
+    else{
+        this.views++;
+    }
+    this.save();
+});
+
 mongoose.model('Bangumi', BangumiSchema);

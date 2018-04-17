@@ -55,7 +55,7 @@ class BangumiController extends BaseController{
 
         let bangumi;
         try {
-            bangumi = await query.select('-_id -__v').populate('crt', '-_id -__v').exec();
+            bangumi = await query.select('-update_time -create_time -__v').populate('crt', '-_id -__v').exec();
         }
         catch (err) {
             err.info = 'Get bangumi document error';
@@ -67,6 +67,8 @@ class BangumiController extends BaseController{
             bangumi
         }
         res.status(200).json(result);
+
+        bangumi.increaseView();
     }
 
     async _makeListQuery({

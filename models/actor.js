@@ -25,4 +25,14 @@ ActorSchema.pre('save', (next) => {
     next();
 });
 
+ActorSchema.method('increaseView', function() {
+    if(!this.views){
+        this.views = 1;
+    }
+    else{
+        this.views++;
+    }
+    this.save();
+});
+
 mongoose.model('Actor', ActorSchema);
