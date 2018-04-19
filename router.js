@@ -10,5 +10,6 @@ router.get('/bangumi/:id', bangumiController.detail);
 
 router.get('/staffs/list', staffController.list);
 router.get('/staff/:id', staffController.detail);
+router.get('/staffs/bangumi', staffController.bangumi);
 
 module.exports = router;

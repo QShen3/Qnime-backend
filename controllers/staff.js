@@ -5,7 +5,7 @@ const { Staff, Bangumi } = require('../models');
 const BaseController = require('./base');
 
 class StaffController extends BaseController {
-    constructor(){
+    constructor() {
         super();
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
@@ -18,7 +18,9 @@ class StaffController extends BaseController {
             ({ query, pager } = await this._makeListQuery(req.query, next));
         }
         catch (err) {
-            err.info = 'Make staff list query error';
+            if (!err.info) {
+                err.info = 'Make staff list query error';
+            }
             return next(err);
         }
 
@@ -45,7 +47,9 @@ class StaffController extends BaseController {
             query = this._makeDetailQuery(req.params, next);
         }
         catch (err) {
-            err.info = 'Make staff detail query error';
+            if (!err.info) {
+                err.info = 'Make staff detail query error';
+            }
             return next(err);
         }
 
@@ -66,14 +70,32 @@ class StaffController extends BaseController {
     }
 
     async bangumi(req, res, next) {
-        let query;
-        try{
-            query = await this._makeBangumiQuery(req.query, next);
+        let query, pager;
+        try {
+            ({ query, pager } = await this._makeBangumiQuery(req.query, next));
         }
-        catch(err){
-            err.info = 'Make staff bangumi query error';
+        catch (err) {
+            if (!err.info) {
+                err.info = 'Make staff bangumi query error';
+            }
             return next(err);
         }
+
+        let bangumis;
+        try {
+            bangumis = await query.select('name name_cn air_date status type country quarter images views ep_count').exec();
+        }
+        catch (err) {
+            err.info = 'Get bangumi documents error';
+            return next(err);
+        }
+
+        let result = {
+            info: this.info200,
+            bangumis,
+            pager,
+        };
+        res.status(200).json(result);
     }
 
     async _makeListQuery({
@@ -86,7 +108,7 @@ class StaffController extends BaseController {
         let query = Staff.find();
 
         if (validator.isIn(gender || "", ['男', '女'])) {
-            query = query.find({'info.gender': gender});
+            query = query.find({ 'info.gender': gender });
         }
 
         if (!validator.isEmpty(job || "")) {
@@ -95,7 +117,7 @@ class StaffController extends BaseController {
 
         if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
             let error = this.error400('Invalid params sort');
-            return next(error);
+            throw (error);
         }
 
         let count = await query.count().exec();
@@ -117,7 +139,7 @@ class StaffController extends BaseController {
     _makeDetailQuery({ id }, next) {
         if (!validator.isMongoId(id)) {
             let error = this.error400('Invalid params id');
-            return next(error);
+            throw (error);
         }
 
         let query = Staff.findById(id);
@@ -125,7 +147,7 @@ class StaffController extends BaseController {
         return query;
     }
 
-    async _makeBangumiQuery({ 
+    async _makeBangumiQuery({
         sort = 'update_time',
         page = 1,
         pagesize = 30,
@@ -133,15 +155,15 @@ class StaffController extends BaseController {
     }, next) {
         if (!validator.isMongoId(id)) {
             let error = this.error400('Invalid params id');
-            return next(error);
+            throw (error);
         }
 
         if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
             let error = this.error400('Invalid params sort');
-            return next(error);
+            throw (error);
         }
 
-        let query = Bangumi.elemMatch('staff', {id: mongoose.Schema.Types.ObjectId(id)});
+        let query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id) });
 
         let count = await query.count().exec();
         let pager = {
