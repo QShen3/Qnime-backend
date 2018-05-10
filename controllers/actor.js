@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const validator = require('validator');
 
-const { Actor, Bangumi } = require('../models');
+const { Actor, Bangumi, Crt } = require('../models');
 const BaseController = require('./base');
 
 class ActorController extends BaseController {
-    constructor(){
+    constructor() {
         super();
         this.list = this.list.bind(this);
         this.detail = this.detail.bind(this);
@@ -14,10 +15,12 @@ class ActorController extends BaseController {
     async list(req, res, next) {
         let pager, query;
         try {
-            ({ query, pager } = this._makeListQuery(req.query, next));
+            ({ query, pager } = await this._makeListQuery(req.query, next));
         }
         catch (err) {
-            err.info = 'Make actor list query error';
+            if (!err.info) {
+                err.info = 'Make actor list query error';
+            }
             return next(err);
         }
 
@@ -44,7 +47,9 @@ class ActorController extends BaseController {
             query = this._makeDetailQuery(req.params, next);
         }
         catch (err) {
-            err.info = 'Make actor detail query error';
+            if (!err.info) {
+                err.info = 'Make actor detail query error';
+            }
             return next(err);
         }
 
@@ -59,20 +64,38 @@ class ActorController extends BaseController {
 
         let result = {
             info: this.info200,
-            staff
+            actor
         }
         res.status(200).json(result);
     }
 
     async bangumi(req, res, next) {
-        let query;
-        try{
-            query = await this._makeBangumiQuery(req.query, next);
+        let query, pager;
+        try {
+            ({ query, pager } = await this._makeBangumiQuery(req.query, next));
         }
-        catch(err){
-            err.info = 'Make actor bangumi query error';
+        catch (err) {
+            if (!err.info) {
+                err.info = 'Make actor bangumi query error';
+            }
             return next(err);
         }
+
+        let bangumis;
+        try {
+            bangumis = await query.select('name name_cn air_date status type country quarter images views ep_count').exec();
+        }
+        catch (err) {
+            err.info = 'Get bangumi documents error';
+            return next(err);
+        }
+
+        let result = {
+            info: this.info200,
+            bangumis,
+            pager,
+        };
+        res.status(200).json(result);
     }
 
     async _makeListQuery({
@@ -83,13 +106,13 @@ class ActorController extends BaseController {
     }, next) {
         let query = Actor.find();
 
-        if (validator.isIn(gender, ['男', '女'])) {
-            query = query.elemMatch('info', { gender: gender });
+        if (validator.isIn(gender || "", ['男', '女'])) {
+            query = query.find({ 'info.gender': gender });
         }
 
         if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
             let error = this.error400('Invalid params sort');
-            return next(error);
+            throw (error);
         }
 
         let count = await query.count().exec();
@@ -100,7 +123,7 @@ class ActorController extends BaseController {
             lastpage: Math.ceil(parseInt(count) / parseInt(pagesize)),
         }
 
-        query = query.skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
+        query = query.find().sort(sort).skip((parseInt(page) - 1) * parseInt(pagesize)).limit(parseInt(pagesize));
 
         return {
             query,
@@ -111,7 +134,7 @@ class ActorController extends BaseController {
     _makeDetailQuery({ id }, next) {
         if (!validator.isMongoId(id)) {
             let error = this.error400('Invalid params id');
-            return next(error);
+            throw (error);
         }
 
         let query = Actor.findById(id);
@@ -119,7 +142,7 @@ class ActorController extends BaseController {
         return query;
     }
 
-    async _makeBangumiQuery({ 
+    async _makeBangumiQuery({
         sort = 'update_time',
         page = 1,
         pagesize = 30,
@@ -127,19 +150,29 @@ class ActorController extends BaseController {
     }, next) {
         if (!validator.isMongoId(id)) {
             let error = this.error400('Invalid params id');
-            return next(error);
+            throw (error);
         }
 
         if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
             let error = this.error400('Invalid params sort');
-            return next(error);
+            throw (error);
         }
 
-        let query = Bangumi.populate({
-            path: 'crt',
-            select: '-__v',
-            match: {cv: mongoose.Schema.Types.ObjectId(id)}
-        });
+        let crts;
+        try {
+            crts = await Crt.find().where('cv.id').in([mongoose.Types.ObjectId(id)]).exec();
+        }
+        catch (err) {
+            let error = this.error500('Failed to get crt');
+            throw (error);
+        }
+
+        let crtIds = [];
+        for(let crt of crts){
+            crtIds.push(crt._id);
+        }
+
+        let query = Bangumi.where('crt').in(crtIds);
 
         let count = await query.count().exec();
         let pager = {

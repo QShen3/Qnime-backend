@@ -12,7 +12,11 @@ const CrtSchema = new Schema({
         grid: { type: String },
     },
     info: {type: Schema.Types.Mixed},
-    cv: [{type: Schema.Types.ObjectId, ref: 'Actor'}]
+    cv: [{
+        name: { type: String },
+        name_cn: { type: String },
+        id: {type: Schema.Types.ObjectId, ref: 'Actor'}
+    }]
 });
 
 CrtSchema.index({ name: 1 });

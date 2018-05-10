@@ -12,6 +12,13 @@ class BaseController {
         error.statusCode = 400;
         return error;
     }
+
+    error500(info){
+        let error = new Error();
+        error.info = info || '';
+        error.statusCode = 500;
+        return error;
+    }
 }
 
 module.exports = BaseController;
