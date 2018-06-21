@@ -3,6 +3,7 @@ const { Router } = require('express');
 const bangumiController = require('./controllers/bangumi');
 const staffController = require('./controllers/staff');
 const actorController = require('./controllers/actor');
+const episodeController = require('./controllers/episode');
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.get('/staffs/bangumi', staffController.bangumi);
 router.get('/actors/list', actorController.list);
 router.get('/actor/:id', actorController.detail);
 router.get('/actors/bangumi', actorController.bangumi);
+
+router.get('/episode/:id', episodeController.detail);
 
 module.exports = router;
