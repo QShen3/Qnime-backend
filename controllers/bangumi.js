@@ -84,37 +84,37 @@ class BangumiController extends BaseController{
     }, next) {
         let query = Bangumi.find();
 
-        if (validator.isInt(before || '', {
+        if (before && validator.isInt(before, {
             min: 1900,
             max: parseInt(dtime().format('YYYY')),
         })) {
             query = query.where('air_year').lte(before);
         }
 
-        if (validator.isInt(after || '', {
+        if (after && validator.isInt(after, {
             min: 1900,
             max: parseInt(dtime().format('YYYY')),
         })) {
             query = query.where('air_year').gte(after);
         }
 
-        if (validator.isIn(type || '', ['tv', 'ova', 'movie', 'web', 'special_tv', 'other'])) {
+        if (type && validator.isIn(type, ['tv', 'ova', 'movie', 'web', 'special_tv', 'other'])) {
             query = query.find({ type: type });
         }
 
-        if (!validator.isEmpty(country || '')) {
+        if (country && !validator.isEmpty(country)) {
             query = query.find({ country: country });
         }
 
-        if (validator.isIn(quarter || '', ['winter', 'spring', 'summer', 'autumn'])) {
+        if (quarter && validator.isIn(quarter, ['winter', 'spring', 'summer', 'autumn'])) {
             query = query.find({ quarter: quarter });
         }
 
-        if (validator.isIn(weekday || '', ['0', '1', '2', '3', '4', '5', '6'])) {
+        if (weekday && validator.isIn(weekday, ['0', '1', '2', '3', '4', '5', '6'])) {
             query = query.find({ air_weekday: weekday });
         }
 
-        if (!validator.isIn(sort || '', ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
+        if (sort && !validator.isIn(sort, ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
             let error = this.error400('Invalid params sort');
             throw(error);
         }
