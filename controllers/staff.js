@@ -152,6 +152,7 @@ class StaffController extends BaseController {
         page = 1,
         pagesize = 30,
         id,
+        job,
     }, next) {
         if (!validator.isMongoId(id)) {
             let error = this.error400('Invalid params id');
@@ -163,7 +164,18 @@ class StaffController extends BaseController {
             throw (error);
         }
 
-        let query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id) });
+        if (job && validator.isEmpty) {
+            let error = this.error400('Invalid params job');
+            throw (error);
+        }
+
+        let query;
+        if(job){
+            query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id), jobs: { $in: [job] } });
+        }
+        else{
+            query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id) });
+        }
 
         let count = await query.count().exec();
         let pager = {

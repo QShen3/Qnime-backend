@@ -114,7 +114,7 @@ class BangumiController extends BaseController{
             query = query.find({ air_weekday: weekday });
         }
 
-        if (sort && !validator.isIn(sort, ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
+        if (!validator.isIn(sort, ['create_time', 'update_time', 'views', '-create_time', '-update_time', '-views'])) {
             let error = this.error400('Invalid params sort');
             throw(error);
         }
