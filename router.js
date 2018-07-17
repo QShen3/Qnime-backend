@@ -7,16 +7,16 @@ const episodeController = require('./controllers/episode');
 
 const router = Router();
 
-router.get('/bangumis/list', bangumiController.list);
-router.get('/bangumi/:id', bangumiController.detail);
+router.get('/bangumi/list', bangumiController.list);
+router.get('/bangumi/detail', bangumiController.detail);
 
-router.get('/staffs/list', staffController.list);
-router.get('/staff/:id', staffController.detail);
-router.get('/staffs/bangumi', staffController.bangumi);
+router.get('/staff/list', staffController.list);
+router.get('/staff/detail', staffController.detail);
+router.get('/staff/bangumi', staffController.bangumi);
 
-router.get('/actors/list', actorController.list);
-router.get('/actor/:id', actorController.detail);
-router.get('/actors/bangumi', actorController.bangumi);
+router.get('/actor/list', actorController.list);
+router.get('/actor/detail', actorController.detail);
+router.get('/actor/bangumi', actorController.bangumi);
 
 router.get('/episode/:id', episodeController.detail);
 

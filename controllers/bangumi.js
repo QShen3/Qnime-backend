@@ -44,7 +44,7 @@ class BangumiController extends BaseController{
     async detail(req, res, next) {
         let query;
         try {
-            query = this._makeDetailQuery(req.params, next);
+            query = this._makeDetailQuery(req.query, next);
         }
         catch (err) {
             if(!err.info){

@@ -7,7 +7,9 @@ const BroadcasterSchema = new Schema({
     name_cn: { type: String },
     logo: {type: String},
     url: {type: String},
-    intro: {type: String}
+    intro: {type: String},
+    views: {type: Number, default: 0},
+    update_time: { type: Date, default: Date.now },
 });
 
 BroadcasterSchema.index({ name: 1 });

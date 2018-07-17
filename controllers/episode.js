@@ -13,7 +13,7 @@ class EpisodeController extends BaseController {
     async detail(req, res, next) {
         let query;
         try{
-            query = this._makeDetailQuery(req.params);
+            query = this._makeDetailQuery(req.query);
         }
         catch(err){
             if(!err.info){

@@ -44,7 +44,7 @@ class StaffController extends BaseController {
     async detail(req, res, next) {
         let query;
         try {
-            query = this._makeDetailQuery(req.params, next);
+            query = this._makeDetailQuery(req.query, next);
         }
         catch (err) {
             if (!err.info) {
@@ -152,7 +152,7 @@ class StaffController extends BaseController {
         page = 1,
         pagesize = 30,
         id,
-        job,
+        jobs,
     }, next) {
         if (!validator.isMongoId(id)) {
             let error = this.error400('Invalid params id');
@@ -164,14 +164,15 @@ class StaffController extends BaseController {
             throw (error);
         }
 
-        if (job && validator.isEmpty) {
+        if (jobs && validator.isEmpty(jobs)) {
             let error = this.error400('Invalid params job');
             throw (error);
         }
 
         let query;
-        if(job){
-            query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id), jobs: { $in: [job] } });
+        if(jobs){
+            jobs = jobs.split(',')
+            query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id), jobs: { $in: jobs } });
         }
         else{
             query = Bangumi.find().elemMatch('staff', { id: mongoose.Types.ObjectId(id) });
